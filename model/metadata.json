@@ -1,0 +1,26 @@
+{
+    "modele_regression": "XGBoost",
+    "modele_classification": "XGBoost",
+    "target_regression": "duree_h",
+    "target_classification": "anomalie_duree",
+    "R2_regression": 0.9367300859020762,
+    "MAE_regression": 0.6390979056266973,
+    "F1_classification": 0.9456277446054441,
+    "Accuracy_classification": 0.9456609894566099,
+    "random_state": 41,
+    "features": [
+        "annee",
+        "mois_num",
+        "saison_enc",
+        "delegation_enc",
+        "zone_enc",
+        "cause_enc",
+        "type_enc",
+        "nb_abonnes_affectes",
+        "is_weekend",
+        "recidive_flag",
+        "impact_energie_kwh"
+    ],
+    "seuil_anomalie_duree": 6.24,
+    "date_entrainement": "2026-08-05"
+}
