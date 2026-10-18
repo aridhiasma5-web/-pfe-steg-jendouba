@@ -121,10 +121,15 @@ def load_data():
         encoding="utf-8-sig"
     )
 
-    df_comp_reg = pd.read_csv(
-        "data/comparatif_regression.csv",
-        encoding="utf-8-sig"
-    )
+ df_comp_reg = pd.read_csv(
+    "data/comparatif_regression.csv",
+    encoding="utf-8-sig"
+)
+
+# Supprimer définitivement LSTM du tableau comparatif
+df_comp_reg = df_comp_reg[
+    df_comp_reg["Algorithme"].str.strip().str.upper() != "LSTM"
+].copy()
 
     df_comp_clf = pd.read_csv(
         "data/comparatif_classification.csv",
