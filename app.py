@@ -7,6 +7,7 @@ import plotly.express as px
 import pickle
 import json
 
+
 # ============================================================
 # CONFIGURATION STREAMLIT
 # ============================================================
@@ -17,86 +18,90 @@ st.set_page_config(
     page_icon="⚡"
 )
 
+
 # ============================================================
 # STYLE CSS
 # ============================================================
 
-st.markdown("""
-<style>
+st.markdown(
+    """
+    <style>
 
-h1 {
-    color: #1A237E;
-    font-weight: 800;
-    border-bottom: 3px solid #1E88E5;
-    padding-bottom: 8px;
-}
+    h1 {
+        color: #1A237E;
+        font-weight: 800;
+        border-bottom: 3px solid #1E88E5;
+        padding-bottom: 8px;
+    }
 
-h2 {
-    color: #1A237E;
-    font-weight: 700;
-    margin-top: 1.5rem;
-}
+    h2 {
+        color: #1A237E;
+        font-weight: 700;
+        margin-top: 1.5rem;
+    }
 
-h3 {
-    color: #283593;
-    font-weight: 600;
-}
+    h3 {
+        color: #283593;
+        font-weight: 600;
+    }
 
-[data-testid="stSidebar"] {
-    background-color: #0D1B4C;
-}
+    [data-testid="stSidebar"] {
+        background-color: #0D1B4C;
+    }
 
-[data-testid="stSidebar"] * {
-    color: #FFFFFF !important;
-}
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+    }
 
-[data-testid="stSidebar"] .stRadio label {
-    font-size: 15px;
-}
+    [data-testid="stSidebar"] .stRadio label {
+        font-size: 15px;
+    }
 
-[data-testid="stMetric"] {
-    background-color: #F5F7FA;
-    border: 1px solid #E0E0E0;
-    border-left: 5px solid #1E88E5;
-    border-radius: 10px;
-    padding: 15px 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-}
+    [data-testid="stMetric"] {
+        background-color: #F5F7FA;
+        border: 1px solid #E0E0E0;
+        border-left: 5px solid #1E88E5;
+        border-radius: 10px;
+        padding: 15px 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
 
-[data-testid="stMetricLabel"] {
-    font-weight: 600;
-    color: #455A64;
-}
+    [data-testid="stMetricLabel"] {
+        font-weight: 600;
+        color: #455A64;
+    }
 
-[data-testid="stMetricValue"] {
-    color: #1A237E;
-    font-weight: 800;
-}
+    [data-testid="stMetricValue"] {
+        color: #1A237E;
+        font-weight: 800;
+    }
 
-[data-testid="stDataFrame"] {
-    border: 1px solid #E0E0E0;
-    border-radius: 8px;
-    overflow: hidden;
-}
+    [data-testid="stDataFrame"] {
+        border: 1px solid #E0E0E0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
 
-.stTabs [data-baseweb="tab"] {
-    font-weight: 600;
-}
+    .stTabs [data-baseweb="tab"] {
+        font-weight: 600;
+    }
 
-.stButton > button {
-    background-color: #1E88E5;
-    color: white;
-    border-radius: 8px;
-    border: none;
-    font-weight: 600;
-}
+    .stButton > button {
+        background-color: #1E88E5;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+    }
 
-.stButton > button:hover {
-    background-color: #1565C0;
-}
+    .stButton > button:hover {
+        background-color: #1565C0;
+    }
 
-</style>
-""", unsafe_allow_html=True)
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
@@ -121,15 +126,10 @@ def load_data():
         encoding="utf-8-sig"
     )
 
- df_comp_reg = pd.read_csv(
-    "data/comparatif_regression.csv",
-    encoding="utf-8-sig"
-)
-
-# Supprimer définitivement LSTM du tableau comparatif
-df_comp_reg = df_comp_reg[
-    df_comp_reg["Algorithme"].str.strip().str.upper() != "LSTM"
-].copy()
+    df_comp_reg = pd.read_csv(
+        "data/comparatif_regression.csv",
+        encoding="utf-8-sig"
+    )
 
     df_comp_clf = pd.read_csv(
         "data/comparatif_classification.csv",
@@ -147,13 +147,20 @@ df_comp_reg = df_comp_reg[
         encoding="utf-8-sig"
     )
 
-    # --------------------------------------------------------
-    # SUPPRESSION DE LSTM DU TABLEAU COMPARATIF
-    # --------------------------------------------------------
-
+    # Garder uniquement les algorithmes utilises
+    # dans la version finale du projet.
     if "Algorithme" in df_comp_reg.columns:
+
+        algorithmes_autorises = [
+            "Linear Regression",
+            "Random Forest",
+            "XGBoost"
+        ]
+
         df_comp_reg = df_comp_reg[
-            df_comp_reg["Algorithme"].astype(str).str.upper() != "LSTM"
+            df_comp_reg["Algorithme"].isin(
+                algorithmes_autorises
+            )
         ].copy()
 
     return (
@@ -205,7 +212,7 @@ def load_model():
         scaler = pickle.load(f)
 
     # --------------------------------------------------------
-    # ENCODEURS
+    # ENCODEUR SAISON
     # --------------------------------------------------------
 
     with open(
@@ -214,11 +221,19 @@ def load_model():
     ) as f:
         le_saison = pickle.load(f)
 
+    # --------------------------------------------------------
+    # ENCODEUR DELEGATION
+    # --------------------------------------------------------
+
     with open(
         "model/label_encoder_delegation.pkl",
         "rb"
     ) as f:
         le_deleg = pickle.load(f)
+
+    # --------------------------------------------------------
+    # ENCODEUR ZONE
+    # --------------------------------------------------------
 
     with open(
         "model/label_encoder_zone.pkl",
@@ -226,11 +241,19 @@ def load_model():
     ) as f:
         le_zone = pickle.load(f)
 
+    # --------------------------------------------------------
+    # ENCODEUR CAUSE
+    # --------------------------------------------------------
+
     with open(
         "model/label_encoder_cause.pkl",
         "rb"
     ) as f:
         le_cause = pickle.load(f)
+
+    # --------------------------------------------------------
+    # ENCODEUR TYPE
+    # --------------------------------------------------------
 
     with open(
         "model/label_encoder_type.pkl",
@@ -294,7 +317,9 @@ def load_model():
 # NAVIGATION
 # ============================================================
 
-st.sidebar.title("STEG Jendouba")
+st.sidebar.title(
+    "STEG Jendouba"
+)
 
 st.sidebar.markdown(
     "Prediction et Analyse des Pannes Electriques"
@@ -422,7 +447,7 @@ if page == "1. Tableau de Bord":
 
         st.plotly_chart(
             fig,
-            width="stretch"
+            use_container_width=True
         )
 
     # --------------------------------------------------------
@@ -457,7 +482,7 @@ if page == "1. Tableau de Bord":
 
         st.plotly_chart(
             fig2,
-            width="stretch"
+            use_container_width=True
         )
 
     st.markdown("---")
@@ -473,12 +498,15 @@ if page == "1. Tableau de Bord":
     c1, c2, c3 = st.columns(3)
 
     if metadata["R2_regression"] > 0.70:
+
         c1.success(
             "R2 > 0.70 : VALIDE ({:.4f})".format(
                 metadata["R2_regression"]
             )
         )
+
     else:
+
         c1.error(
             "R2 > 0.70 : NON VALIDE ({:.4f})".format(
                 metadata["R2_regression"]
@@ -486,12 +514,15 @@ if page == "1. Tableau de Bord":
         )
 
     if metadata["MAE_regression"] < 1:
+
         c2.success(
             "MAE < 1h : VALIDE ({:.3f} h)".format(
                 metadata["MAE_regression"]
             )
         )
+
     else:
+
         c2.error(
             "MAE < 1h : NON VALIDE ({:.3f} h)".format(
                 metadata["MAE_regression"]
@@ -499,12 +530,15 @@ if page == "1. Tableau de Bord":
         )
 
     if metadata["F1_classification"] > 0.70:
+
         c3.success(
             "F1 > 0.70 : VALIDE ({:.4f})".format(
                 metadata["F1_classification"]
             )
         )
+
     else:
+
         c3.error(
             "F1 > 0.70 : NON VALIDE ({:.4f})".format(
                 metadata["F1_classification"]
@@ -624,7 +658,7 @@ if page == "2. Donnees et Exploration":
 
             st.plotly_chart(
                 fig3,
-                width="stretch"
+                use_container_width=True
             )
 
         with col4:
@@ -694,7 +728,7 @@ if page == "2. Donnees et Exploration":
 
         st.plotly_chart(
             fig5,
-            width="stretch"
+            use_container_width=True
         )
 
         st.dataframe(
@@ -702,7 +736,7 @@ if page == "2. Donnees et Exploration":
                 "Nb Pannes",
                 ascending=False
             ),
-            width="stretch"
+            use_container_width=True
         )
 
 
@@ -780,7 +814,7 @@ if page == "3. Preparation des Donnees":
 
         st.dataframe(
             features_info,
-            width="stretch"
+            use_container_width=True
         )
 
         st.info(
@@ -834,7 +868,7 @@ if page == "3. Preparation des Donnees":
 
         st.plotly_chart(
             fig,
-            width="stretch"
+            use_container_width=True
         )
 
 
@@ -876,7 +910,7 @@ if page == "4. Modelisation et Evaluation":
                 subset=["MAE", "RMSE"],
                 color="lightgreen"
             ),
-            width="stretch"
+            use_container_width=True
         )
 
         st.subheader(
@@ -889,7 +923,7 @@ if page == "4. Modelisation et Evaluation":
                 subset=["F1", "Accuracy"],
                 color="lightgreen"
             ),
-            width="stretch"
+            use_container_width=True
         )
 
     # --------------------------------------------------------
@@ -916,12 +950,15 @@ if page == "4. Modelisation et Evaluation":
             x="Algorithme",
             y=metrique,
             color="Algorithme",
-            title=f"Comparaison des algorithmes - {metrique}"
+            title=(
+                "Comparaison des algorithmes - "
+                + metrique
+            )
         )
 
         st.plotly_chart(
             fig,
-            width="stretch"
+            use_container_width=True
         )
 
         st.subheader(
@@ -943,12 +980,15 @@ if page == "4. Modelisation et Evaluation":
             x="Algorithme",
             y=metrique_clf,
             color="Algorithme",
-            title=f"Comparaison des algorithmes - {metrique_clf}"
+            title=(
+                "Comparaison des algorithmes - "
+                + metrique_clf
+            )
         )
 
         st.plotly_chart(
             fig_clf,
-            width="stretch"
+            use_container_width=True
         )
 
     # --------------------------------------------------------
@@ -979,7 +1019,7 @@ if page == "4. Modelisation et Evaluation":
 
         st.plotly_chart(
             fig2,
-            width="stretch"
+            use_container_width=True
         )
 
         st.markdown("---")
@@ -1005,6 +1045,7 @@ if page == "4. Modelisation et Evaluation":
         )
 
         if "RMSE_regression" in metadata:
+
             col3.metric(
                 "RMSE",
                 "{:.3f} h".format(
@@ -1033,6 +1074,7 @@ if page == "4. Modelisation et Evaluation":
         )
 
         if "Accuracy_classification" in metadata:
+
             col5.metric(
                 "Accuracy",
                 "{:.3f}".format(
@@ -1088,7 +1130,7 @@ if page == "5. Clustering et Anomalies":
 
         st.dataframe(
             df_km[colonnes_km_existantes],
-            width="stretch"
+            use_container_width=True
         )
 
         # ----------------------------------------------------
@@ -1115,7 +1157,7 @@ if page == "5. Clustering et Anomalies":
 
             st.plotly_chart(
                 fig,
-                width="stretch"
+                use_container_width=True
             )
 
         st.info(
@@ -1180,7 +1222,7 @@ if page == "5. Clustering et Anomalies":
 
             st.plotly_chart(
                 fig2,
-                width="stretch"
+                use_container_width=True
             )
 
         st.success(
@@ -1274,16 +1316,19 @@ if page == "6. Carte Interactive":
     metriques_disponibles = []
 
     if "nb_pannes" in df_map.columns:
+
         metriques_disponibles.append(
             "nb_pannes"
         )
 
     if "duree_moy" in df_map.columns:
+
         metriques_disponibles.append(
             "duree_moy"
         )
 
     if "energie" in df_map.columns:
+
         metriques_disponibles.append(
             "energie"
         )
@@ -1319,9 +1364,11 @@ if page == "6. Carte Interactive":
             df_map,
             lat="lat",
             lon="lon",
-            size="nb_pannes"
-            if "nb_pannes" in df_map.columns
-            else None,
+            size=(
+                "nb_pannes"
+                if "nb_pannes" in df_map.columns
+                else None
+            ),
             color=metrique_map,
             hover_name="delegation",
             hover_data=hover_columns,
@@ -1342,7 +1389,7 @@ if page == "6. Carte Interactive":
 
         st.plotly_chart(
             fig,
-            width="stretch"
+            use_container_width=True
         )
 
         st.info(
@@ -1521,34 +1568,25 @@ if page == "7. Prediction Personnalisee":
             # CREATION DU VECTEUR DE PREDICTION
             # ------------------------------------------------
 
-            X_new = pd.DataFrame([{
-
-                "annee": annee_input,
-
-                "mois_num": mois_input,
-
-                "saison_enc": saison_encoded,
-
-                "delegation_enc": delegation_encoded,
-
-                "zone_enc": zone_encoded,
-
-                "cause_enc": cause_encoded,
-
-                "type_enc": type_encoded,
-
-                "nb_abonnes_affectes":
-                    nb_abonnes_input,
-
-                "is_weekend":
-                    int(is_weekend_input),
-
-                "recidive_flag":
-                    int(recidive_input),
-
-                "impact_energie_kwh":
-                    energie_input
-            }])
+            X_new = pd.DataFrame(
+                [{
+                    "annee": annee_input,
+                    "mois_num": mois_input,
+                    "saison_enc": saison_encoded,
+                    "delegation_enc": delegation_encoded,
+                    "zone_enc": zone_encoded,
+                    "cause_enc": cause_encoded,
+                    "type_enc": type_encoded,
+                    "nb_abonnes_affectes":
+                        nb_abonnes_input,
+                    "is_weekend":
+                        int(is_weekend_input),
+                    "recidive_flag":
+                        int(recidive_input),
+                    "impact_energie_kwh":
+                        energie_input
+                }]
+            )
 
             # ------------------------------------------------
             # NORMALISATION
@@ -1560,7 +1598,6 @@ if page == "7. Prediction Personnalisee":
 
             # ------------------------------------------------
             # PREDICTION DUREE
-            # XGBOOST REGRESSION
             # ------------------------------------------------
 
             duree_predite = xgb_reg.predict(
@@ -1574,7 +1611,6 @@ if page == "7. Prediction Personnalisee":
 
             # ------------------------------------------------
             # DETECTION ANOMALIE
-            # XGBOOST CLASSIFICATION
             # ------------------------------------------------
 
             anomalie_predite = xgb_clf.predict(
@@ -1582,7 +1618,7 @@ if page == "7. Prediction Personnalisee":
             )[0]
 
             # ------------------------------------------------
-            # PROBABILITE D'ANOMALIE
+            # PROBABILITE
             # ------------------------------------------------
 
             probabilite_anomalie = None
@@ -1653,6 +1689,7 @@ if page == "7. Prediction Personnalisee":
             )
 
             resume = pd.DataFrame({
+
                 "Caracteristique": [
                     "Annee",
                     "Mois",
@@ -1676,19 +1713,23 @@ if page == "7. Prediction Personnalisee":
                     cause_input,
                     type_input,
                     nb_abonnes_input,
-                    "Oui"
-                    if is_weekend_input
-                    else "Non",
-                    "Oui"
-                    if recidive_input
-                    else "Non",
+                    (
+                        "Oui"
+                        if is_weekend_input
+                        else "Non"
+                    ),
+                    (
+                        "Oui"
+                        if recidive_input
+                        else "Non"
+                    ),
                     f"{energie_input:.2f} kWh"
                 ]
             })
 
             st.dataframe(
                 resume,
-                width="stretch",
+                use_container_width=True,
                 hide_index=True
             )
 
@@ -1729,22 +1770,24 @@ if page == "8. Recommandations":
             "Recommandations Operationnelles"
         )
 
-        st.markdown("""
-        - Renforcer la maintenance preventive en ete
-          pendant les periodes de forte sollicitation.
+        st.markdown(
+            """
+            - Renforcer la maintenance preventive en ete
+              pendant les periodes de forte sollicitation.
 
-        - Prioriser les interventions dans les delegations
-          presentant les profils de pannes les plus critiques.
+            - Prioriser les interventions dans les delegations
+              presentant les profils de pannes les plus critiques.
 
-        - Exploiter les predictions de duree pour mieux
-          planifier les equipes d'intervention.
+            - Exploiter les predictions de duree pour mieux
+              planifier les equipes d'intervention.
 
-        - Auditer les pannes anormales identifiees par
-          le systeme de detection.
+            - Auditer les pannes anormales identifiees par
+              le systeme de detection.
 
-        - Utiliser les resultats du clustering pour
-          orienter les actions de maintenance.
-        """)
+            - Utiliser les resultats du clustering pour
+              orienter les actions de maintenance.
+            """
+        )
 
     # --------------------------------------------------------
     # RECOMMANDATIONS ANALYTIQUES
@@ -1756,22 +1799,24 @@ if page == "8. Recommandations":
             "Recommandations Analytiques"
         )
 
-        st.markdown("""
-        - Reentrainer periodiquement les modeles
-          XGBoost avec les nouvelles donnees disponibles.
+        st.markdown(
+            """
+            - Reentrainer periodiquement les modeles
+              XGBoost avec les nouvelles donnees disponibles.
 
-        - Surveiller regulierement les performances
-          de la regression et de la classification.
+            - Surveiller regulierement les performances
+              de la regression et de la classification.
 
-        - Integrer des donnees meteorologiques afin
-          d'enrichir les variables explicatives.
+            - Integrer des donnees meteorologiques afin
+              d'enrichir les variables explicatives.
 
-        - Corriger progressivement les donnees associees
-          a la delegation « Inconnu ».
+            - Corriger progressivement les donnees associees
+              a la delegation « Inconnu ».
 
-        - Etendre ulterieurement l'analyse a d'autres
-          gouvernorats.
-        """)
+            - Etendre ulterieurement l'analyse a d'autres
+              gouvernorats.
+            """
+        )
 
     st.markdown("---")
 
