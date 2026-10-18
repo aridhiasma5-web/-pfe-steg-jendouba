@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -142,6 +141,15 @@ def load_data():
         "data/anomalies_pannes.csv",
         encoding="utf-8-sig"
     )
+
+    # --------------------------------------------------------
+    # SUPPRESSION DE LSTM DU TABLEAU COMPARATIF
+    # --------------------------------------------------------
+
+    if "Algorithme" in df_comp_reg.columns:
+        df_comp_reg = df_comp_reg[
+            df_comp_reg["Algorithme"].astype(str).str.upper() != "LSTM"
+        ].copy()
 
     return (
         df_panne,
@@ -409,7 +417,7 @@ if page == "1. Tableau de Bord":
 
         st.plotly_chart(
             fig,
-            use_container_width=True
+            width="stretch"
         )
 
     # --------------------------------------------------------
@@ -444,7 +452,7 @@ if page == "1. Tableau de Bord":
 
         st.plotly_chart(
             fig2,
-            use_container_width=True
+            width="stretch"
         )
 
     st.markdown("---")
@@ -611,7 +619,7 @@ if page == "2. Donnees et Exploration":
 
             st.plotly_chart(
                 fig3,
-                use_container_width=True
+                width="stretch"
             )
 
         with col4:
@@ -681,7 +689,7 @@ if page == "2. Donnees et Exploration":
 
         st.plotly_chart(
             fig5,
-            use_container_width=True
+            width="stretch"
         )
 
         st.dataframe(
@@ -689,7 +697,7 @@ if page == "2. Donnees et Exploration":
                 "Nb Pannes",
                 ascending=False
             ),
-            use_container_width=True
+            width="stretch"
         )
 
 
@@ -767,7 +775,7 @@ if page == "3. Preparation des Donnees":
 
         st.dataframe(
             features_info,
-            use_container_width=True
+            width="stretch"
         )
 
         st.info(
@@ -821,7 +829,7 @@ if page == "3. Preparation des Donnees":
 
         st.plotly_chart(
             fig,
-            use_container_width=True
+            width="stretch"
         )
 
 
@@ -863,7 +871,7 @@ if page == "4. Modelisation et Evaluation":
                 subset=["MAE", "RMSE"],
                 color="lightgreen"
             ),
-            use_container_width=True
+            width="stretch"
         )
 
         st.subheader(
@@ -876,7 +884,7 @@ if page == "4. Modelisation et Evaluation":
                 subset=["F1", "Accuracy"],
                 color="lightgreen"
             ),
-            use_container_width=True
+            width="stretch"
         )
 
     # --------------------------------------------------------
@@ -908,7 +916,7 @@ if page == "4. Modelisation et Evaluation":
 
         st.plotly_chart(
             fig,
-            use_container_width=True
+            width="stretch"
         )
 
         st.subheader(
@@ -935,7 +943,7 @@ if page == "4. Modelisation et Evaluation":
 
         st.plotly_chart(
             fig_clf,
-            use_container_width=True
+            width="stretch"
         )
 
     # --------------------------------------------------------
@@ -966,7 +974,7 @@ if page == "4. Modelisation et Evaluation":
 
         st.plotly_chart(
             fig2,
-            use_container_width=True
+            width="stretch"
         )
 
         st.markdown("---")
@@ -1075,7 +1083,7 @@ if page == "5. Clustering et Anomalies":
 
         st.dataframe(
             df_km[colonnes_km_existantes],
-            use_container_width=True
+            width="stretch"
         )
 
         # ----------------------------------------------------
@@ -1102,7 +1110,7 @@ if page == "5. Clustering et Anomalies":
 
             st.plotly_chart(
                 fig,
-                use_container_width=True
+                width="stretch"
             )
 
         st.info(
@@ -1167,7 +1175,7 @@ if page == "5. Clustering et Anomalies":
 
             st.plotly_chart(
                 fig2,
-                use_container_width=True
+                width="stretch"
             )
 
         st.success(
@@ -1329,7 +1337,7 @@ if page == "6. Carte Interactive":
 
         st.plotly_chart(
             fig,
-            use_container_width=True
+            width="stretch"
         )
 
         st.info(
@@ -1554,7 +1562,6 @@ if page == "7. Prediction Personnalisee":
                 X_new_sc
             )[0]
 
-            # Protection contre une prediction negative
             duree_predite = max(
                 0,
                 float(duree_predite)
@@ -1676,7 +1683,7 @@ if page == "7. Prediction Personnalisee":
 
             st.dataframe(
                 resume,
-                use_container_width=True,
+                width="stretch",
                 hide_index=True
             )
 
@@ -1799,4 +1806,3 @@ if page == "8. Recommandations":
         "duree des pannes ainsi que pour la detection "
         "des anomalies de duree."
     )
-```
